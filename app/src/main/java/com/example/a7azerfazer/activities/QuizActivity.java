@@ -2,12 +2,14 @@ package com.example.a7azerfazer.activities;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,85 +26,87 @@ import java.util.List;
 
 public class QuizActivity extends AppCompatActivity {
 
-    private TextView tvQuestionNumber, tvScore, tvQuestion;
-    private Button btnOptionA, btnOptionB, btnOptionC, btnOptionD, btnNext;
+    // Éléments de l'interface
+    private TextView tvQuestionNumber, tvQuestion, tvTimer;
+    private Button btnOption1, btnOption2, btnOption3, btnOption4;
+    private ProgressBar progressBar;
 
+    // Firebase
     private FirebaseFirestore db;
+
+    // Variables du quiz
     private List<Question> questionList;
     private int currentQuestionIndex = 0;
     private int score = 0;
-    private int selectedAnswerIndex = -1;
-    private boolean answerSelected = false;
-
     private String categoryId;
     private String categoryName;
+    private boolean answerSelected = false;
+
+    // Timer
+    private CountDownTimer countDownTimer;
+    private static final long QUESTION_TIME_LIMIT = 10000; // 10 secondes en millisecondes
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_quiz);
 
-        // Initialiser Firestore
+        // Initialiser Firebase
         db = FirebaseFirestore.getInstance();
-        questionList = new ArrayList<>();
 
-        // Récupérer les données passées depuis CategoryActivity
+        // Récupérer les données de l'Intent
         categoryId = getIntent().getStringExtra("categoryId");
         categoryName = getIntent().getStringExtra("categoryName");
 
         // Lier les éléments
         tvQuestionNumber = findViewById(R.id.tvQuestionNumber);
-        tvScore = findViewById(R.id.tvScore);
         tvQuestion = findViewById(R.id.tvQuestion);
-        btnOptionA = findViewById(R.id.btnOptionA);
-        btnOptionB = findViewById(R.id.btnOptionB);
-        btnOptionC = findViewById(R.id.btnOptionC);
-        btnOptionD = findViewById(R.id.btnOptionD);
-        btnNext = findViewById(R.id.btnNext);
+        tvTimer = findViewById(R.id.tvTimer);
+        btnOption1 = findViewById(R.id.btnOption1);
+        btnOption2 = findViewById(R.id.btnOption2);
+        btnOption3 = findViewById(R.id.btnOption3);
+        btnOption4 = findViewById(R.id.btnOption4);
+        progressBar = findViewById(R.id.progressBar);
 
-        // Charger les questions de cette catégorie
-        loadQuestions(categoryId);
+        // Initialiser la liste
+        questionList = new ArrayList<>();
 
-        // Gérer les clics sur les options
-        setupOptionListeners();
-
-        // Bouton Suivant
-        btnNext.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                goToNextQuestion();
-            }
-        });
+        // Charger les questions depuis Firestore
+        loadQuestions();
     }
 
-    private void loadQuestions(String categoryId) {
+    private void loadQuestions() {
+        progressBar.setVisibility(View.VISIBLE);
+
         db.collection("questions")
                 .whereEqualTo("categoryId", categoryId)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful() && task.getResult() != null) {
+                        progressBar.setVisibility(View.GONE);
+
+                        if (task.isSuccessful()) {
                             questionList.clear();
 
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 Question question = document.toObject(Question.class);
+                                question.setQuestionId(document.getId());
                                 questionList.add(question);
                             }
 
-                            if (questionList.size() > 0) {
-                                // Afficher la première question
-                                displayQuestion();
-                            } else {
+                            if (questionList.isEmpty()) {
                                 Toast.makeText(QuizActivity.this,
                                         "Aucune question disponible pour cette catégorie",
                                         Toast.LENGTH_LONG).show();
                                 finish();
+                            } else {
+                                // Afficher la première question
+                                displayQuestion();
                             }
-
                         } else {
                             Toast.makeText(QuizActivity.this,
-                                    "Erreur de chargement des questions",
+                                    "Erreur lors du chargement des questions",
                                     Toast.LENGTH_SHORT).show();
                             finish();
                         }
@@ -111,156 +115,215 @@ public class QuizActivity extends AppCompatActivity {
     }
 
     private void displayQuestion() {
-        if (currentQuestionIndex < questionList.size()) {
-            Question question = questionList.get(currentQuestionIndex);
+        answerSelected = false;
 
-            // Afficher le numéro de question
-            tvQuestionNumber.setText("Question " + (currentQuestionIndex + 1) + "/" + questionList.size());
-
-            // Afficher le score
-            tvScore.setText("Score: " + score);
-
-            // Afficher le texte de la question
-            String questionText = question.getQuestionText();
-            if (questionText != null && !questionText.isEmpty()) {
-                tvQuestion.setText(questionText);
-            } else {
-                tvQuestion.setText("Question non disponible");
-            }
-
-            // Afficher les options
-            List<String> options = question.getOptions();
-            if (options != null && options.size() >= 4) {
-                btnOptionA.setText(options.get(0));
-                btnOptionB.setText(options.get(1));
-                btnOptionC.setText(options.get(2));
-                btnOptionD.setText(options.get(3));
-            } else {
-                Toast.makeText(this, "Erreur: options manquantes", Toast.LENGTH_SHORT).show();
-            }
-
-            // Réinitialiser les couleurs des boutons
-            resetButtonColors();
-
-            // Réactiver les boutons d'options
-            enableOptionButtons(true);
-
-            // Réinitialiser la sélection
-            selectedAnswerIndex = -1;
-            answerSelected = false;
-            btnNext.setEnabled(false);
+        // Annuler le timer précédent s'il existe
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
         }
-    }
-
-    private void setupOptionListeners() {
-        btnOptionA.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                selectAnswer(0, btnOptionA);
-            }
-        });
-
-        btnOptionB.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                selectAnswer(1, btnOptionB);
-            }
-        });
-
-        btnOptionC.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                selectAnswer(2, btnOptionC);
-            }
-        });
-
-        btnOptionD.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                selectAnswer(3, btnOptionD);
-            }
-        });
-    }
-
-    private void selectAnswer(int answerIndex, Button selectedButton) {
-        // Empêcher de sélectionner plusieurs fois
-        if (answerSelected) {
-            return;
-        }
-
-        answerSelected = true;
-
-        // Sauvegarder l'index de la réponse sélectionnée
-        selectedAnswerIndex = answerIndex;
-
-        // Désactiver tous les boutons d'options
-        enableOptionButtons(false);
 
         // Récupérer la question actuelle
         Question currentQuestion = questionList.get(currentQuestionIndex);
 
-        // Vérifier si la réponse est correcte
-        if (answerIndex == currentQuestion.getCorrectAnswerIndex()) {
-            // Bonne réponse : vert
-            selectedButton.setBackgroundColor(getResources().getColor(R.color.correct_answer));
-            score += 10; // Ajouter 10 points
-            tvScore.setText("Score: " + score);
-            Toast.makeText(this, "Correct ! +10 points", Toast.LENGTH_SHORT).show();
-        } else {
-            // Mauvaise réponse : rouge
-            selectedButton.setBackgroundColor(getResources().getColor(R.color.wrong_answer));
+        // Afficher le numéro de question
+        tvQuestionNumber.setText("Question " + (currentQuestionIndex + 1) + "/" + questionList.size());
 
-            // Afficher la bonne réponse en vert
-            Button correctButton = getButtonByIndex(currentQuestion.getCorrectAnswerIndex());
-            if (correctButton != null) {
-                correctButton.setBackgroundColor(getResources().getColor(R.color.correct_answer));
+        // Afficher la question
+        tvQuestion.setText(currentQuestion.getQuestionText());
+
+        // Afficher les options
+        List<String> options = currentQuestion.getOptions();
+        btnOption1.setText(options.get(0));
+        btnOption2.setText(options.get(1));
+        btnOption3.setText(options.get(2));
+        btnOption4.setText(options.get(3));
+
+        // Réinitialiser les couleurs des boutons
+        resetButtonColors();
+
+        // Activer tous les boutons
+        enableAllButtons(true);
+
+        // Écouter les clics
+        btnOption1.setOnClickListener(optionClickListener);
+        btnOption2.setOnClickListener(optionClickListener);
+        btnOption3.setOnClickListener(optionClickListener);
+        btnOption4.setOnClickListener(optionClickListener);
+
+        // Démarrer le timer de 10 secondes
+        startTimer();
+    }
+
+    private void startTimer() {
+        countDownTimer = new CountDownTimer(QUESTION_TIME_LIMIT, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                // Mettre à jour l'affichage du timer
+                int secondsLeft = (int) (millisUntilFinished / 1000);
+                tvTimer.setText("⏱ " + secondsLeft + "s");
+
+                // Changer la couleur selon le temps restant
+                if (secondsLeft <= 3) {
+                    tvTimer.setTextColor(Color.parseColor("#F44336")); // Rouge
+                } else if (secondsLeft <= 5) {
+                    tvTimer.setTextColor(Color.parseColor("#FF9800")); // Orange
+                } else {
+                    tvTimer.setTextColor(Color.parseColor("#4CAF50")); // Vert
+                }
             }
-            Toast.makeText(this, "Incorrect !", Toast.LENGTH_SHORT).show();
+
+            @Override
+            public void onFinish() {
+                // Temps écoulé !
+                if (!answerSelected) {
+                    tvTimer.setText("⏱ 0s");
+                    tvTimer.setTextColor(Color.parseColor("#F44336"));
+
+                    Toast.makeText(QuizActivity.this,
+                            "Temps écoulé ! ⏰",
+                            Toast.LENGTH_SHORT).show();
+
+                    // Marquer comme mauvaise réponse
+                    answerSelected = true;
+                    enableAllButtons(false);
+
+                    // Afficher la bonne réponse
+                    Question currentQuestion = questionList.get(currentQuestionIndex);
+                    showCorrectAnswer(currentQuestion.getCorrectAnswerIndex());
+
+                    // Passer à la question suivante après 1.5 secondes
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            goToNextQuestion();
+                        }
+                    }, 1500);
+                }
+            }
+        };
+
+        countDownTimer.start();
+    }
+
+    // Listener pour les options
+    private View.OnClickListener optionClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            if (answerSelected) {
+                return; // Ne rien faire si une réponse a déjà été sélectionnée
+            }
+
+            answerSelected = true;
+
+            // Arrêter le timer
+            if (countDownTimer != null) {
+                countDownTimer.cancel();
+            }
+
+            // Désactiver tous les boutons
+            enableAllButtons(false);
+
+            // Récupérer la question actuelle
+            Question currentQuestion = questionList.get(currentQuestionIndex);
+
+            // Trouver quel bouton a été cliqué
+            int selectedOption = -1;
+            if (v.getId() == btnOption1.getId()) selectedOption = 0;
+            else if (v.getId() == btnOption2.getId()) selectedOption = 1;
+            else if (v.getId() == btnOption3.getId()) selectedOption = 2;
+            else if (v.getId() == btnOption4.getId()) selectedOption = 3;
+
+            // Vérifier si la réponse est correcte
+            if (selectedOption == currentQuestion.getCorrectAnswerIndex()) {
+                // Bonne réponse
+                ((Button) v).setBackgroundColor(Color.parseColor("#4CAF50")); // Vert
+                score += 10; // +10 points par bonne réponse
+                Toast.makeText(QuizActivity.this, "Bonne réponse ! ✓", Toast.LENGTH_SHORT).show();
+            } else {
+                // Mauvaise réponse
+                ((Button) v).setBackgroundColor(Color.parseColor("#F44336")); // Rouge
+
+                // Afficher la bonne réponse en vert
+                showCorrectAnswer(currentQuestion.getCorrectAnswerIndex());
+
+                Toast.makeText(QuizActivity.this, "Mauvaise réponse ✗", Toast.LENGTH_SHORT).show();
+            }
+
+            // Passer à la question suivante après 1.5 secondes
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    goToNextQuestion();
+                }
+            }, 1500);
         }
-
-        // Activer le bouton Suivant
-        btnNext.setEnabled(true);
-    }
-
-    private void enableOptionButtons(boolean enabled) {
-        btnOptionA.setEnabled(enabled);
-        btnOptionB.setEnabled(enabled);
-        btnOptionC.setEnabled(enabled);
-        btnOptionD.setEnabled(enabled);
-    }
-
-    private Button getButtonByIndex(int index) {
-        switch (index) {
-            case 0: return btnOptionA;
-            case 1: return btnOptionB;
-            case 2: return btnOptionC;
-            case 3: return btnOptionD;
-            default: return null;
-        }
-    }
-
-    private void resetButtonColors() {
-        btnOptionA.setBackgroundColor(Color.WHITE);
-        btnOptionB.setBackgroundColor(Color.WHITE);
-        btnOptionC.setBackgroundColor(Color.WHITE);
-        btnOptionD.setBackgroundColor(Color.WHITE);
-    }
+    };
 
     private void goToNextQuestion() {
         currentQuestionIndex++;
 
         if (currentQuestionIndex < questionList.size()) {
-            // Afficher la question suivante
+            // Il reste des questions
             displayQuestion();
         } else {
-            // Quiz terminé - Aller vers ResultActivity
-            Intent intent = new Intent(QuizActivity.this, ResultActivity.class);
-            intent.putExtra("score", score);
-            intent.putExtra("totalQuestions", questionList.size());
-            intent.putExtra("categoryId", categoryId);
-            intent.putExtra("categoryName", categoryName);
-            startActivity(intent);
-            finish();
+            // Quiz terminé
+            showResults();
+        }
+    }
+
+    private void showCorrectAnswer(int correctIndex) {
+        switch (correctIndex) {
+            case 0:
+                btnOption1.setBackgroundColor(Color.parseColor("#4CAF50"));
+                break;
+            case 1:
+                btnOption2.setBackgroundColor(Color.parseColor("#4CAF50"));
+                break;
+            case 2:
+                btnOption3.setBackgroundColor(Color.parseColor("#4CAF50"));
+                break;
+            case 3:
+                btnOption4.setBackgroundColor(Color.parseColor("#4CAF50"));
+                break;
+        }
+    }
+
+    private void resetButtonColors() {
+        btnOption1.setBackgroundColor(Color.parseColor("#FFFFFF"));
+        btnOption2.setBackgroundColor(Color.parseColor("#FFFFFF"));
+        btnOption3.setBackgroundColor(Color.parseColor("#FFFFFF"));
+        btnOption4.setBackgroundColor(Color.parseColor("#FFFFFF"));
+    }
+
+    private void enableAllButtons(boolean enabled) {
+        btnOption1.setEnabled(enabled);
+        btnOption2.setEnabled(enabled);
+        btnOption3.setEnabled(enabled);
+        btnOption4.setEnabled(enabled);
+    }
+
+    private void showResults() {
+        // Annuler le timer s'il existe
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+        }
+
+        Intent intent = new Intent(QuizActivity.this, ResultActivity.class);
+        intent.putExtra("score", score);
+        intent.putExtra("totalQuestions", questionList.size());
+        intent.putExtra("correctAnswers", score / 10); // Chaque bonne réponse = 10 points
+        intent.putExtra("categoryName", categoryName);
+        intent.putExtra("categoryId", categoryId);
+        startActivity(intent);
+        finish();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Annuler le timer quand l'activité est détruite
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
         }
     }
 }

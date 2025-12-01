@@ -3,10 +3,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp"
+    android:padding="20dp"
     android:background="@color/background_color">
 
-    <!-- En-tête avec numéro de question et score -->
+    <!-- En-tête : Question et Timer -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -20,97 +20,88 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Question 1/10"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="@color/primary_color" />
+            android:textSize="18sp"
+            android:textColor="@color/text_secondary" />
 
-        <!-- Score -->
+        <!-- Timer -->
         <TextView
-            android:id="@+id/tvScore"
+            android:id="@+id/tvTimer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Score: 0"
-            android:textSize="16sp"
+            android:text="⏱ 10s"
+            android:textSize="20sp"
             android:textStyle="bold"
-            android:textColor="@color/primary_color" />
+            android:textColor="@color/primary_color"
+            android:padding="8dp"
+            android:background="@drawable/edittext_background" />
 
     </LinearLayout>
 
-    <!-- Texte de la question -->
+    <!-- Question -->
     <TextView
         android:id="@+id/tvQuestion"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Que signifie HTML ?"
-        android:textSize="20sp"
+        android:text="Quelle est la capitale de la France ?"
+        android:textSize="22sp"
         android:textStyle="bold"
         android:textColor="@color/text_primary"
-        android:layout_marginBottom="30dp"
-        android:padding="16dp"
-        android:background="@drawable/edittext_background" />
+        android:layout_marginBottom="30dp" />
 
-    <!-- Option A -->
+    <!-- Option 1 -->
     <Button
-        android:id="@+id/btnOptionA"
+        android:id="@+id/btnOption1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Option A"
+        android:text="Option 1"
         android:textColor="@color/text_primary"
         android:background="@drawable/option_background"
-        android:padding="16dp"
+        android:padding="20dp"
         android:textSize="16sp"
-        android:layout_marginBottom="12dp"
-        android:gravity="start|center_vertical" />
+        android:layout_marginBottom="12dp" />
 
-    <!-- Option B -->
+    <!-- Option 2 -->
     <Button
-        android:id="@+id/btnOptionB"
+        android:id="@+id/btnOption2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Option B"
+        android:text="Option 2"
         android:textColor="@color/text_primary"
         android:background="@drawable/option_background"
-        android:padding="16dp"
+        android:padding="20dp"
         android:textSize="16sp"
-        android:layout_marginBottom="12dp"
-        android:gravity="start|center_vertical" />
+        android:layout_marginBottom="12dp" />
 
-    <!-- Option C -->
+    <!-- Option 3 -->
     <Button
-        android:id="@+id/btnOptionC"
+        android:id="@+id/btnOption3"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Option C"
+        android:text="Option 3"
         android:textColor="@color/text_primary"
         android:background="@drawable/option_background"
-        android:padding="16dp"
+        android:padding="20dp"
         android:textSize="16sp"
-        android:layout_marginBottom="12dp"
-        android:gravity="start|center_vertical" />
+        android:layout_marginBottom="12dp" />
 
-    <!-- Option D -->
+    <!-- Option 4 -->
     <Button
-        android:id="@+id/btnOptionD"
+        android:id="@+id/btnOption4"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Option D"
+        android:text="Option 4"
         android:textColor="@color/text_primary"
         android:background="@drawable/option_background"
-        android:padding="16dp"
+        android:padding="20dp"
         android:textSize="16sp"
-        android:layout_marginBottom="30dp"
-        android:gravity="start|center_vertical" />
+        android:layout_marginBottom="12dp" />
 
-    <!-- Bouton Suivant -->
-    <Button
-        android:id="@+id/btnNext"
-        android:layout_width="match_parent"
+    <!-- ProgressBar (chargement) -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Suivant"
-        android:textColor="@color/white"
-        android:background="@drawable/button_background"
-        android:padding="16dp"
-        android:textSize="18sp"
-        android:enabled="false" />
+        android:layout_gravity="center"
+        android:visibility="gone" />
 
 </LinearLayout>
