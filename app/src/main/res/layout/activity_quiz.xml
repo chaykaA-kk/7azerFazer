@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@color/background_color">
+
+    <!-- En-tête avec numéro de question et score -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="20dp">
+
+        <!-- Numéro de question -->
+        <TextView
+            android:id="@+id/tvQuestionNumber"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Question 1/10"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@color/primary_color" />
+
+        <!-- Score -->
+        <TextView
+            android:id="@+id/tvScore"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Score: 0"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@color/primary_color" />
+
+    </LinearLayout>
+
+    <!-- Texte de la question -->
+    <TextView
+        android:id="@+id/tvQuestion"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Que signifie HTML ?"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@color/text_primary"
+        android:layout_marginBottom="30dp"
+        android:padding="16dp"
+        android:background="@drawable/edittext_background" />
+
+    <!-- Option A -->
+    <Button
+        android:id="@+id/btnOptionA"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Option A"
+        android:textColor="@color/text_primary"
+        android:background="@drawable/option_background"
+        android:padding="16dp"
+        android:textSize="16sp"
+        android:layout_marginBottom="12dp"
+        android:gravity="start|center_vertical" />
+
+    <!-- Option B -->
+    <Button
+        android:id="@+id/btnOptionB"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Option B"
+        android:textColor="@color/text_primary"
+        android:background="@drawable/option_background"
+        android:padding="16dp"
+        android:textSize="16sp"
+        android:layout_marginBottom="12dp"
+        android:gravity="start|center_vertical" />
+
+    <!-- Option C -->
+    <Button
+        android:id="@+id/btnOptionC"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Option C"
+        android:textColor="@color/text_primary"
+        android:background="@drawable/option_background"
+        android:padding="16dp"
+        android:textSize="16sp"
+        android:layout_marginBottom="12dp"
+        android:gravity="start|center_vertical" />
+
+    <!-- Option D -->
+    <Button
+        android:id="@+id/btnOptionD"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Option D"
+        android:textColor="@color/text_primary"
+        android:background="@drawable/option_background"
+        android:padding="16dp"
+        android:textSize="16sp"
+        android:layout_marginBottom="30dp"
+        android:gravity="start|center_vertical" />
+
+    <!-- Bouton Suivant -->
+    <Button
+        android:id="@+id/btnNext"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Suivant"
+        android:textColor="@color/white"
+        android:background="@drawable/button_background"
+        android:padding="16dp"
+        android:textSize="18sp"
+        android:enabled="false" />
+
+</LinearLayout>

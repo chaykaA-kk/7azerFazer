@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:gravity="center"
+    android:background="@color/background_color">
+
+    <!-- Message de bienvenue -->
+    <TextView
+        android:id="@+id/tvWelcome"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Bienvenue"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:textColor="@color/primary_color"
+        android:layout_marginBottom="40dp" />
+
+    <!-- Bouton Commencer un Quiz -->
+    <Button
+        android:id="@+id/btnStartQuiz"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Commencer un Quiz"
+        android:textColor="@color/white"
+        android:background="@drawable/button_background"
+        android:padding="16dp"
+        android:textSize="18sp"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Bouton Voir l'historique -->
+    <Button
+        android:id="@+id/btnViewHistory"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Voir l'historique"
+        android:textColor="@color/white"
+        android:background="@drawable/button_background"
+        android:padding="16dp"
+        android:textSize="18sp"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Bouton Déconnexion -->
+    <Button
+        android:id="@+id/btnLogout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Déconnexion"
+        android:textColor="@color/white"
+        android:background="@drawable/button_background"
+        android:padding="16dp"
+        android:textSize="18sp"
+        android:layout_marginTop="40dp" />
+
+</LinearLayout>
