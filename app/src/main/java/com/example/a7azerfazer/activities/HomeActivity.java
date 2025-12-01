@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -19,6 +20,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 public class HomeActivity extends AppCompatActivity {
 
+    private static final String TAG = "HomeActivity";
+
     private TextView tvWelcome;
     private Button btnStartQuiz, btnViewHistory, btnLogout;
 
@@ -30,57 +33,111 @@ public class HomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
+        Log.d(TAG, "HomeActivity onCreate started");
+
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
 
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser == null) {
+            Log.e(TAG, "No current user, redirecting to login");
             startActivity(new Intent(HomeActivity.this, LoginActivity.class));
             finish();
             return;
         }
 
-        tvWelcome = findViewById(R.id.tvWelcome);
-        btnStartQuiz = findViewById(R.id.btnStartQuiz);
-        btnViewHistory = findViewById(R.id.btnViewHistory);
-        btnLogout = findViewById(R.id.btnLogout);
+        // Initialize views
+        try {
+            tvWelcome = findViewById(R.id.tvWelcome);
+            btnStartQuiz = findViewById(R.id.btnStartQuiz);
+            btnViewHistory = findViewById(R.id.btnViewHistory);
+            btnLogout = findViewById(R.id.btnLogout);
+
+            Log.d(TAG, "All views initialized successfully");
+
+            // Check if buttons are null
+            if (btnStartQuiz == null) {
+                Log.e(TAG, "btnStartQuiz is NULL!");
+            }
+            if (btnViewHistory == null) {
+                Log.e(TAG, "btnViewHistory is NULL!");
+            }
+            if (btnLogout == null) {
+                Log.e(TAG, "btnLogout is NULL!");
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error initializing views", e);
+            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
 
         loadUsername(currentUser.getUid());
 
         // Bouton Commencer un Quiz
-        btnStartQuiz.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(HomeActivity.this, CategoryActivity.class);
-                startActivity(intent);
-            }
-        });
+        if (btnStartQuiz != null) {
+            btnStartQuiz.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.d(TAG, "Start Quiz button clicked");
+                    try {
+                        Intent intent = new Intent(HomeActivity.this, CategoryActivity.class);
+                        startActivity(intent);
+                        Log.d(TAG, "CategoryActivity started successfully");
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error starting CategoryActivity", e);
+                        Toast.makeText(HomeActivity.this,
+                                "Error: " + e.getMessage(),
+                                Toast.LENGTH_LONG).show();
+                    }
+                }
+            });
+        }
 
         // Bouton Voir l'historique
-        btnViewHistory.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(HomeActivity.this, HistoryActivity.class);
-                startActivity(intent);
-            }
-        });
+        if (btnViewHistory != null) {
+            btnViewHistory.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.d(TAG, "View History button clicked");
+                    try {
+                        Intent intent = new Intent(HomeActivity.this, HistoryActivity.class);
+                        startActivity(intent);
+                        Log.d(TAG, "HistoryActivity started successfully");
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error starting HistoryActivity", e);
+                        Toast.makeText(HomeActivity.this,
+                                "Error: " + e.getMessage(),
+                                Toast.LENGTH_LONG).show();
+                    }
+                }
+            });
+        } else {
+            Log.e(TAG, "btnViewHistory is null, cannot set click listener!");
+        }
 
         // Bouton Déconnexion
-        btnLogout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mAuth.signOut();
-                Toast.makeText(HomeActivity.this,
-                        "Déconnexion réussie",
-                        Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(HomeActivity.this, LoginActivity.class);
-                startActivity(intent);
-                finish();
-            }
-        });
+        if (btnLogout != null) {
+            btnLogout.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.d(TAG, "Logout button clicked");
+                    mAuth.signOut();
+                    Toast.makeText(HomeActivity.this,
+                            "Déconnexion réussie",
+                            Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(HomeActivity.this, LoginActivity.class);
+                    startActivity(intent);
+                    finish();
+                }
+            });
+        }
+
+        Log.d(TAG, "HomeActivity onCreate completed");
     }
 
     private void loadUsername(String userId) {
+        Log.d(TAG, "Loading username for userId: " + userId);
+
         db.collection("users").document(userId)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -91,6 +148,7 @@ public class HomeActivity extends AppCompatActivity {
 
                             if (document != null && document.exists()) {
                                 String username = document.getString("username");
+                                Log.d(TAG, "Username retrieved: " + username);
 
                                 if (username != null && !username.isEmpty()) {
                                     tvWelcome.setText("Bienvenue, " + username + " !");
@@ -101,9 +159,11 @@ public class HomeActivity extends AppCompatActivity {
                                     }
                                 }
                             } else {
+                                Log.w(TAG, "User document does not exist");
                                 tvWelcome.setText("Bienvenue !");
                             }
                         } else {
+                            Log.e(TAG, "Error loading username", task.getException());
                             Toast.makeText(HomeActivity.this,
                                     "Erreur lors du chargement du profil",
                                     Toast.LENGTH_SHORT).show();

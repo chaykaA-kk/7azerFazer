@@ -3,23 +3,48 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/background_color">
+    android:background="@color/background_color"
+    android:padding="24dp">
 
-    <!-- Titre -->
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="24dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="← Back"
+            android:textColor="@color/text_secondary"
+            android:textSize="16sp"
+            android:padding="8dp"/>
+    </LinearLayout>
+
+    <!-- Title -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Choisissez une catégorie"
-        android:textSize="24sp"
+        android:text="Choose a Category"
+        android:textSize="28sp"
         android:textStyle="bold"
-        android:textColor="@color/primary_color"
-        android:padding="16dp" />
+        android:textColor="@color/text_primary"
+        android:layout_marginBottom="8dp"/>
 
-    <!-- RecyclerView pour la liste des catégories -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select a topic to start your quiz"
+        android:textSize="16sp"
+        android:textColor="@color/text_secondary"
+        android:layout_marginBottom="24dp"/>
+
+    <!-- RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewCategories"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="8dp" />
+        android:layout_height="match_parent"/>
 
 </LinearLayout>

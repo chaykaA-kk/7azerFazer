@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,7 +32,8 @@ public class HistoryActivity extends AppCompatActivity {
     private static final String TAG = "HistoryActivity";
 
     private RecyclerView recyclerView;
-    private TextView tvNoHistory;
+    private LinearLayout tvNoHistory;  // Changed to LinearLayout
+    private TextView btnBack;
     private HistoryAdapter adapter;
     private List<QuizResult> resultList;
     private FirebaseFirestore db;
@@ -40,46 +42,90 @@ public class HistoryActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_history);
 
-        Log.d(TAG, "HistoryActivity créée");
+        try {
+            setContentView(R.layout.activity_history);
+            Log.d(TAG, "HistoryActivity created");
 
-        // Initialiser Firebase
-        db = FirebaseFirestore.getInstance();
-        mAuth = FirebaseAuth.getInstance();
+            // Initialize Firebase
+            db = FirebaseFirestore.getInstance();
+            mAuth = FirebaseAuth.getInstance();
 
-        // Lier les éléments
-        recyclerView = findViewById(R.id.recyclerViewHistory);
-        tvNoHistory = findViewById(R.id.tvNoHistory);
+            // Check if user is logged in
+            if (mAuth.getCurrentUser() == null) {
+                Log.e(TAG, "No user logged in");
+                Toast.makeText(this, "Utilisateur non connecté", Toast.LENGTH_SHORT).show();
+                finish();
+                return;
+            }
 
-        // Initialiser la liste
-        resultList = new ArrayList<>();
+            // Find views
+            recyclerView = findViewById(R.id.recyclerViewHistory);
+            tvNoHistory = findViewById(R.id.tvNoHistory);  // This is LinearLayout in new layout
+            btnBack = findViewById(R.id.btnBack);
 
-        // Initialiser l'adapter
-        adapter = new HistoryAdapter(resultList);
+            if (recyclerView == null) {
+                Log.e(TAG, "recyclerView is NULL!");
+                Toast.makeText(this, "Error: RecyclerView not found", Toast.LENGTH_LONG).show();
+                finish();
+                return;
+            }
 
-        // Configurer le RecyclerView
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(adapter);
+            if (tvNoHistory == null) {
+                Log.e(TAG, "tvNoHistory is NULL!");
+            }
 
-        Log.d(TAG, "RecyclerView configuré");
+            // Back button
+            if (btnBack != null) {
+                btnBack.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Log.d(TAG, "Back button clicked");
+                        finish();
+                    }
+                });
+            }
 
-        // Charger l'historique
-        loadHistory();
+            // Initialize list
+            resultList = new ArrayList<>();
+
+            // Initialize adapter
+            adapter = new HistoryAdapter(resultList);
+
+            // Configure RecyclerView
+            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+            recyclerView.setAdapter(adapter);
+
+            Log.d(TAG, "RecyclerView configured successfully");
+
+            // Load history
+            loadHistory();
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error in onCreate", e);
+            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            finish();
+        }
     }
 
     private void loadHistory() {
         if (mAuth.getCurrentUser() == null) {
-            Log.e(TAG, "Utilisateur non connecté");
+            Log.e(TAG, "User not connected");
             Toast.makeText(this, "Utilisateur non connecté", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
         String userId = mAuth.getCurrentUser().getUid();
-        Log.d(TAG, "Chargement de l'historique pour userId: " + userId);
+        Log.d(TAG, "Loading history for userId: " + userId);
 
-        // Requête Firestore sans orderBy
+        // Show loading state
+        if (tvNoHistory != null) {
+            tvNoHistory.setVisibility(View.GONE);
+        }
+        recyclerView.setVisibility(View.VISIBLE);
+
+        // Query Firestore
         db.collection("results")
                 .whereEqualTo("userId", userId)
                 .get()
@@ -89,7 +135,7 @@ public class HistoryActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             resultList.clear();
 
-                            Log.d(TAG, "Nombre de documents trouvés: " + task.getResult().size());
+                            Log.d(TAG, "Number of documents found: " + task.getResult().size());
 
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 try {
@@ -100,14 +146,14 @@ public class HistoryActivity extends AppCompatActivity {
                                     result.setResultId(document.getId());
                                     resultList.add(result);
 
-                                    Log.d(TAG, "Résultat ajouté: " + result.getCategoryName() +
+                                    Log.d(TAG, "Result added: " + result.getCategoryName() +
                                             " - Score: " + result.getScore());
                                 } catch (Exception e) {
-                                    Log.e(TAG, "Erreur lors de la conversion du document: " + document.getId(), e);
+                                    Log.e(TAG, "Error converting document: " + document.getId(), e);
                                 }
                             }
 
-                            // Trier par date (plus récent en premier)
+                            // Sort by date (most recent first)
                             try {
                                 Collections.sort(resultList, new Comparator<QuizResult>() {
                                     @Override
@@ -119,24 +165,28 @@ public class HistoryActivity extends AppCompatActivity {
                                     }
                                 });
                             } catch (Exception e) {
-                                Log.e(TAG, "Erreur lors du tri", e);
+                                Log.e(TAG, "Error sorting results", e);
                             }
 
                             if (resultList.isEmpty()) {
-                                // Pas d'historique
-                                Log.d(TAG, "Aucun résultat trouvé");
+                                // No history
+                                Log.d(TAG, "No results found");
                                 recyclerView.setVisibility(View.GONE);
-                                tvNoHistory.setVisibility(View.VISIBLE);
+                                if (tvNoHistory != null) {
+                                    tvNoHistory.setVisibility(View.VISIBLE);
+                                }
                             } else {
-                                // Afficher l'historique
-                                Log.d(TAG, "Affichage de " + resultList.size() + " résultats");
+                                // Show history
+                                Log.d(TAG, "Displaying " + resultList.size() + " results");
                                 recyclerView.setVisibility(View.VISIBLE);
-                                tvNoHistory.setVisibility(View.GONE);
+                                if (tvNoHistory != null) {
+                                    tvNoHistory.setVisibility(View.GONE);
+                                }
                                 adapter.notifyDataSetChanged();
                             }
 
                         } else {
-                            Log.e(TAG, "Erreur lors du chargement", task.getException());
+                            Log.e(TAG, "Error loading history", task.getException());
 
                             String errorMessage = "Erreur de chargement de l'historique";
                             if (task.getException() != null) {
@@ -146,6 +196,12 @@ public class HistoryActivity extends AppCompatActivity {
                             Toast.makeText(HistoryActivity.this,
                                     errorMessage,
                                     Toast.LENGTH_LONG).show();
+
+                            // Show empty state on error
+                            recyclerView.setVisibility(View.GONE);
+                            if (tvNoHistory != null) {
+                                tvNoHistory.setVisibility(View.VISIBLE);
+                            }
                         }
                     }
                 });

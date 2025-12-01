@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Couleurs Material Design par défaut -->
+    <!-- Material Design defaults -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <!-- Couleurs personnalisées pour 7azer Fazer -->
-    <color name="primary_color">#4CAF50</color>
-    <color name="primary_dark">#388E3C</color>
-    <color name="accent_color">#FF9800</color>
-    <color name="background_color">#F5F5F5</color>
-    <color name="text_primary">#212121</color>
-    <color name="text_secondary">#757575</color>
-    <color name="correct_answer">#4CAF50</color>
-    <color name="wrong_answer">#F44336</color>
-
+    <!-- New Space Theme Colors -->
+    <color name="primary_color">#8B5CF6</color>
+    <color name="primary_dark">#6D28D9</color>
+    <color name="accent_color">#EC4899</color>
+    <color name="background_color">#1E1B4B</color>
+    <color name="background_dark">#0F172A</color>
+    <color name="card_background">#2E2057</color>
+    <color name="text_primary">#F8FAFC</color>
+    <color name="text_secondary">#94A3B8</color>
+    <color name="correct_answer">#10B981</color>
+    <color name="wrong_answer">#EF4444</color>
+    <color name="gradient_start">#8B5CF6</color>
+    <color name="gradient_end">#3B82F6</color>
 </resources>

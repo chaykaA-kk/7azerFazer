@@ -15,8 +15,16 @@
         android:text="Bienvenue"
         android:textSize="28sp"
         android:textStyle="bold"
-        android:textColor="@color/primary_color"
+        android:textColor="@color/text_primary"
         android:layout_marginBottom="40dp" />
+
+    <!-- Emoji Icon -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="🚀"
+        android:textSize="80sp"
+        android:layout_marginBottom="32dp"/>
 
     <!-- Bouton Commencer un Quiz -->
     <Button
@@ -25,9 +33,10 @@
         android:layout_height="wrap_content"
         android:text="Commencer un Quiz"
         android:textColor="@color/white"
-        android:background="@drawable/button_background"
+        android:background="@drawable/gradient_button"
         android:padding="16dp"
         android:textSize="18sp"
+        android:textAllCaps="false"
         android:layout_marginBottom="16dp" />
 
     <!-- Bouton Voir l'historique -->
@@ -37,9 +46,10 @@
         android:layout_height="wrap_content"
         android:text="Voir l'historique"
         android:textColor="@color/white"
-        android:background="@drawable/button_background"
+        android:background="@drawable/gradient_button"
         android:padding="16dp"
         android:textSize="18sp"
+        android:textAllCaps="false"
         android:layout_marginBottom="16dp" />
 
     <!-- Bouton Déconnexion -->
@@ -48,10 +58,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Déconnexion"
-        android:textColor="@color/white"
-        android:background="@drawable/button_background"
+        android:textColor="@color/text_primary"
+        android:background="@drawable/card_background"
         android:padding="16dp"
         android:textSize="18sp"
+        android:textAllCaps="false"
         android:layout_marginTop="40dp" />
 
 </LinearLayout>
